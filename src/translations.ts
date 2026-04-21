@@ -67,7 +67,16 @@ export const translations = {
       title: "주요 수행 과제",
       desc: "디지털산업혁신협회와 함께 성공적으로 수행된 프로젝트 및 네트워크 현황입니다.",
       empty: "등록된 수행 과제가 없습니다.",
-      btnAdmin: "관리자 화면 들어가기"
+      btnAdmin: "관리자 화면 들어가기",
+      items: [
+        {
+          id: "1",
+          title: "디지털산업혁신협회 첫 시범 사업",
+          client: "디지털 혁신 추진단",
+          year: "2025",
+          description: "디지털 혁신 생태계를 구축하기 위한 초기 컨소시엄 구성 및 플랫폼 구축 사업입니다. 다양한 회원사들이 참여하여 테스트베드를 운영합니다."
+        }
+      ]
     },
     admin: {
       title: "관리자 - 과제 관리",
@@ -178,7 +187,16 @@ export const translations = {
       title: "Completed Projects",
       desc: "A track record of successful projects and partnerships led by our association.",
       empty: "No projects registered yet.",
-      btnAdmin: "Enter Admin Screen"
+      btnAdmin: "Enter Admin Screen",
+      items: [
+        {
+          id: "1",
+          title: "Digital Industry Innovation Association First Pilot Project",
+          client: "Digital Innovation Task Force",
+          year: "2025",
+          description: "This is an initial consortium building and platform development project to establish a digital innovation ecosystem. Various member companies participate to operate an innovative testbed."
+        }
+      ]
     },
     admin: {
       title: "Admin - Manage Projects",
@@ -289,7 +307,16 @@ export const translations = {
       title: "主要遂行プロジェクト",
       desc: "デジタル産業革新協会と共に成功裏に遂行されたプロジェクトの実績です。",
       empty: "登録されたプロジェクトはありません。",
-      btnAdmin: "管理者画面に入る"
+      btnAdmin: "管理者画面に入る",
+      items: [
+        {
+          id: "1",
+          title: "デジタル産業革新協会 初の試行事業",
+          client: "デジタル革新推進団",
+          year: "2025",
+          description: "デジタル革新エコシステムを構築するための初期コンソーシアム構成およびプラットフォーム構築事業です。多様な会員社が参加してテストベッドを運営します。"
+        }
+      ]
     },
     admin: {
       title: "管理者 - プロジェクト管理",
@@ -400,7 +427,16 @@ export const translations = {
       title: "Các dự án đã hoàn thành",
       desc: "Hồ sơ theo dõi các dự án và hợp tác thành công do hiệp hội chúng tôi dẫn dắt.",
       empty: "Chưa có dự án nào được đăng ký.",
-      btnAdmin: "Vào Màn hình Quản trị viên"
+      btnAdmin: "Vào Màn hình Quản trị viên",
+      items: [
+        {
+          id: "1",
+          title: "Dự án thí điểm đầu tiên của Hiệp hội Đổi mới Công nghiệp Kỹ thuật số",
+          client: "Ban Thúc đẩy Đổi mới Kỹ thuật số",
+          year: "2025",
+          description: "Dự án xây dựng liên minh và phát triển nền tảng ban đầu nhằm thiết lập hệ sinh thái đổi mới kỹ thuật số. Các công ty thành viên khác nhau tham gia vận hành môi trường thử nghiệm (testbed)."
+        }
+      ]
     },
     admin: {
       title: "Admin - Quản lý Dự án",

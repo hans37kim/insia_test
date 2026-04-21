@@ -51,7 +51,7 @@ function Logo({ size, className = "" }: { size: number, className?: string }) {
   
   return (
     <img 
-      src="/logo.png?v=4"
+      src="/logo.png?v=5"
       alt="Association Logo" 
       style={{ width: size, height: size, filter: 'brightness(0) invert(1)' }}
       className={`object-contain flex-shrink-0 ${className}`}
@@ -72,16 +72,8 @@ function Home({ language, setLanguage, t }: { language: Language; setLanguage: a
   const langDropdownRef = useRef<HTMLDivElement>(null);
   const mobLangDropdownRef = useRef<HTMLDivElement>(null);
 
-  // 수작업으로 추가할 프로젝트 목록을 여기에 입력하세요. (Add manual projects here)
-  const projects = [
-    {
-      id: "1",
-      title: "디지털산업혁신협회 첫 시범 사업",
-      client: "디지털 혁신 추진단",
-      year: "2025",
-      description: "디지털 혁신 생태계를 구축하기 위한 초기 컨소시엄 구성 및 플랫폼 구축 사업입니다. 다양한 회원사들이 참여하여 테스트베드를 운영합니다."
-    }
-  ];
+  // Use localized projects from translations
+  const projects = t.projects.items || [];
 
   useEffect(() => {
     const handleScroll = () => {
