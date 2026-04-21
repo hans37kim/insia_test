@@ -67,12 +67,12 @@ export const translations = {
       title: "주요 수행 과제",
       desc: "디지털산업혁신협회와 함께 성공적으로 수행된 프로젝트 및 네트워크 현황입니다.",
       empty: "등록된 수행 과제가 없습니다.",
-      btnAdmin: "과제 관리하기"
+      btnAdmin: "관리자 화면 들어가기"
     },
     admin: {
       title: "관리자 - 과제 관리",
       list: "수행 과제 목록",
-      add: "새 과제 등록",
+      add: "주요 수행 과제 추가",
       formTitle: "프로젝트 명",
       formClient: "발주처",
       formDate: "수행 연도 (예: 2025)",
@@ -178,7 +178,7 @@ export const translations = {
       title: "Completed Projects",
       desc: "A track record of successful projects and partnerships led by our association.",
       empty: "No projects registered yet.",
-      btnAdmin: "Manage Projects"
+      btnAdmin: "Enter Admin Screen"
     },
     admin: {
       title: "Admin - Manage Projects",
@@ -289,7 +289,7 @@ export const translations = {
       title: "主要遂行プロジェクト",
       desc: "デジタル産業革新協会と共に成功裏に遂行されたプロジェクトの実績です。",
       empty: "登録されたプロジェクトはありません。",
-      btnAdmin: "プロジェクト管理"
+      btnAdmin: "管理者画面に入る"
     },
     admin: {
       title: "管理者 - プロジェクト管理",
@@ -400,7 +400,7 @@ export const translations = {
       title: "Các dự án đã hoàn thành",
       desc: "Hồ sơ theo dõi các dự án và hợp tác thành công do hiệp hội chúng tôi dẫn dắt.",
       empty: "Chưa có dự án nào được đăng ký.",
-      btnAdmin: "Quản lý Dự án"
+      btnAdmin: "Vào Màn hình Quản trị viên"
     },
     admin: {
       title: "Admin - Quản lý Dự án",

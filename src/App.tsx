@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Routes, Route, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import {
@@ -33,195 +33,31 @@ export default function App() {
   return (
     <Routes>
       <Route path="/" element={<Home language={language} setLanguage={setLanguage} t={t} />} />
-      <Route path="/admin" element={<Admin t={t} language={language} />} />
     </Routes>
   );
 }
-
-// ============== Admin Component ==============
-function Admin({ t, language }: { t: any; language: Language }) {
-  const navigate = useNavigate();
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [projects, setProjects] = useState<any[]>([]);
-  const [status, setStatus] = useState<'idle'|'submitting'>('idle');
-
-  const fetchProjects = async () => {
-    try {
-      const q = query(collection(db, 'projects'), orderBy('createdAt', 'desc'));
-      const snapshot = await getDocs(q);
-      const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setProjects(data);
-    } catch (err: any) {
-      console.error(err);
-      if(err.message?.includes('Missing or insufficient permissions')) {
-        alert("Permission denied. Ensure you are an admin.");
-      }
-    }
-  };
-
-  useEffect(() => {
-    const unsub = onAuthStateChanged(auth, (u) => {
-      setUser(u);
-      setLoading(false);
-      if (u) {
-        fetchProjects();
-      }
-    });
-    return unsub;
-  }, []);
-
-  const handleAddProject = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (!user) return;
-    setStatus('submitting');
-    const formData = new FormData(e.currentTarget);
-    const title = formData.get('title') as string;
-    const client = formData.get('client') as string;
-    const year = formData.get('year') as string;
-    const description = formData.get('description') as string;
-
-    try {
-      await addDoc(collection(db, 'projects'), {
-        title,
-        client,
-        year,
-        description,
-        visibility: 'public',
-        ownerId: user.uid,
-        createdAt: serverTimestamp()
-      });
-      e.currentTarget.reset();
-      await fetchProjects();
-    } catch (err) {
-      console.error(err);
-      try {
-          handleFirestoreError(err, 'create');
-      } catch(handledErr: any) {
-          alert('Error adding project: ' + handledErr.message);
-      }
-    } finally {
-      setStatus('idle');
-    }
-  };
-
-  const handleDelete = async (id: string) => {
-    if (!user || !confirm('Are you sure you want to delete this project?')) return;
-    try {
-      await deleteDoc(doc(db, 'projects', id));
-      await fetchProjects();
-    } catch (err) {
-       console.error(err);
-       try {
-           handleFirestoreError(err, 'delete');
-       } catch(handledErr: any) {
-           alert('Error deleting project: ' + handledErr.message);
-       }
-    }
-  };
-
-  if (loading) return <div className="min-h-screen bg-[#0F172A] flex items-center justify-center text-white">Loading...</div>;
-
-  return (
-    <div className="min-h-screen bg-[#0F172A] text-white font-sans">
-      <header className="bg-white/5 backdrop-blur-xl border-b border-white/10 py-4 px-6 flex justify-between items-center z-50 relative">
-        <div className="flex items-center gap-3">
-           <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-emerald-400 flex items-center justify-center text-white">
-             <Settings size={18} strokeWidth={2.5} />
-           </div>
-           <span className="text-xl font-bold tracking-tight">{t.admin.title}</span>
-        </div>
-        <div className="flex items-center gap-4">
-          <button onClick={() => navigate('/')} className="text-white/70 hover:text-white transition-colors text-sm font-medium">
-            {t.admin.back}
-          </button>
-          {user && (
-            <button onClick={signOut} className="flex items-center gap-2 bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-lg text-sm transition-colors">
-              <LogOut size={16} /> Sign Out
-            </button>
-          )}
-        </div>
-      </header>
-
-      <main className="max-w-5xl mx-auto px-4 py-12 relative z-10">
-        {!user ? (
-          <div className="text-center py-20 bg-white/5 rounded-3xl border border-white/10 p-8">
-            <Settings size={48} className="mx-auto text-white/40 mb-6" />
-            <h2 className="text-2xl font-bold mb-6">Admin Login Required</h2>
-            <button onClick={signInWithGoogle} className="px-8 py-3 bg-gradient-to-r from-indigo-500 to-indigo-600 rounded-xl font-bold flex items-center gap-2 mx-auto">
-              Sign in with Google
-            </button>
-          </div>
-        ) : (
-          <div className="grid md:grid-cols-3 gap-8">
-            {/* Form */}
-            <div className="md:col-span-1 border border-white/10 rounded-3xl p-6 bg-white/5 h-fit backdrop-blur-md">
-              <h3 className="text-xl font-bold mb-6 flex items-center gap-2"><Plus size={20} className="text-emerald-400"/> {t.admin.add}</h3>
-              <form onSubmit={handleAddProject} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-white/70 mb-1">{t.admin.formTitle}</label>
-                  <input required name="title" type="text" className="w-full bg-[#0F172A] border border-white/10 rounded-xl px-4 py-2.5 text-white placeholder-white/20 focus:ring-2 focus:ring-indigo-500 text-sm" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-white/70 mb-1">{t.admin.formClient}</label>
-                  <input required name="client" type="text" className="w-full bg-[#0F172A] border border-white/10 rounded-xl px-4 py-2.5 text-white placeholder-white/20 focus:ring-2 focus:ring-indigo-500 text-sm" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-white/70 mb-1">{t.admin.formDate}</label>
-                  <input required name="year" type="number" className="w-full bg-[#0F172A] border border-white/10 rounded-xl px-4 py-2.5 text-white placeholder-white/20 focus:ring-2 focus:ring-indigo-500 text-sm" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-white/70 mb-1">{t.admin.formDesc}</label>
-                  <textarea required name="description" rows={3} className="w-full bg-[#0F172A] border border-white/10 rounded-xl px-4 py-2.5 text-white placeholder-white/20 focus:ring-2 focus:ring-indigo-500 text-sm resize-none"></textarea>
-                </div>
-                <button disabled={status === 'submitting'} type="submit" className="w-full py-3 mt-4 bg-indigo-500 hover:bg-indigo-400 disabled:opacity-50 text-white rounded-xl font-bold shadow-lg transition-all">
-                  {status === 'submitting' ? t.admin.submitting : t.admin.submit}
-                </button>
-              </form>
-            </div>
-
-            {/* List */}
-            <div className="md:col-span-2">
-              <h3 className="text-xl font-bold mb-6 flex items-center gap-2"><FolderOpen size={20} className="text-indigo-400"/> {t.admin.list}</h3>
-              <div className="space-y-4">
-                {projects.length === 0 ? (
-                  <div className="text-center py-12 bg-white/5 border border-white/10 rounded-2xl text-white/60">
-                    No projects found.
-                  </div>
-                ) : (
-                  projects.map(p => (
-                    <div key={p.id} className="bg-white/5 border border-white/10 rounded-2xl p-5 flex justify-between items-start hover:bg-white/10 transition-colors">
-                      <div>
-                        <div className="flex items-center gap-3 mb-2">
-                          <span className="bg-indigo-500/20 text-indigo-400 px-2.5 py-0.5 rounded text-xs font-bold border border-indigo-500/30">{p.year}</span>
-                          <h4 className="font-bold text-lg">{p.title}</h4>
-                        </div>
-                        <p className="text-sm text-emerald-400 mb-2">{p.client}</p>
-                        <p className="text-sm text-white/60 line-clamp-2">{p.description}</p>
-                      </div>
-                      <button onClick={() => handleDelete(p.id)} className="p-2 text-white/40 hover:text-red-400 hover:bg-white/5 rounded-lg transition-colors flex-shrink-0">
-                        <Trash2 size={18} />
-                      </button>
-                    </div>
-                  ))
-                )}
-              </div>
-            </div>
-          </div>
-        )}
-      </main>
-    </div>
-  );
-}
-
 
 // ============== Home Component ==============
 function Home({ language, setLanguage, t }: { language: Language; setLanguage: any; t: any }) {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isLangOpen, setIsLangOpen] = useState(false);
+  const [isMobLangOpen, setIsMobLangOpen] = useState(false);
   const [formStatus, setFormStatus] = useState<'idle' | 'submitting' | 'success'>('idle');
   
-  const [projects, setProjects] = useState<any[]>([]);
+  const langDropdownRef = useRef<HTMLDivElement>(null);
+  const mobLangDropdownRef = useRef<HTMLDivElement>(null);
+
+  // 수작업으로 추가할 프로젝트 목록을 여기에 입력하세요. (Add manual projects here)
+  const projects = [
+    {
+      id: "1",
+      title: "디지털산업혁신협회 첫 시범 사업",
+      client: "디지털 혁신 추진단",
+      year: "2025",
+      description: "디지털 혁신 생태계를 구축하기 위한 초기 컨소시엄 구성 및 플랫폼 구축 사업입니다. 다양한 회원사들이 참여하여 테스트베드를 운영합니다."
+    }
+  ];
 
   useEffect(() => {
     const handleScroll = () => {
@@ -232,17 +68,16 @@ function Home({ language, setLanguage, t }: { language: Language; setLanguage: a
   }, []);
 
   useEffect(() => {
-    // Fetch public projects
-    const fetchProjects = async () => {
-      try {
-        const q = query(collection(db, 'projects'), where('visibility', '==', 'public'), orderBy('createdAt', 'desc'));
-        const sn = await getDocs(q);
-        setProjects(sn.docs.map(d => ({id: d.id, ...d.data()})));
-      } catch(e) {
-        console.error("Public projects fetch error:", e);
+    const handleClickOutside = (event: MouseEvent) => {
+      if (langDropdownRef.current && !langDropdownRef.current.contains(event.target as Node)) {
+        setIsLangOpen(false);
+      }
+      if (mobLangDropdownRef.current && !mobLangDropdownRef.current.contains(event.target as Node)) {
+        setIsMobLangOpen(false);
       }
     };
-    fetchProjects();
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
   const handleContactSubmit = (e: React.FormEvent) => {
@@ -310,38 +145,44 @@ function Home({ language, setLanguage, t }: { language: Language; setLanguage: a
                 </a>
               ))}
               
-              <div className="relative group">
-                <button className="flex items-center gap-1.5 text-sm font-medium text-white/70 hover:text-white transition-colors px-2 py-1">
-                  <Globe size={16} />
-                  <span className="uppercase">{language}</span>
-                </button>
-                <div className="absolute right-0 mt-2 w-32 origin-top-right rounded-md bg-[#0F172A]/90 backdrop-blur-md shadow-lg ring-1 ring-white/10 focus:outline-none opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
-                  <div className="py-1">
-                    <button onClick={() => setLanguage('ko')} className={`block w-full text-left px-4 py-2 text-sm ${language === 'ko' ? 'text-indigo-400 bg-white/5' : 'text-white/70 hover:bg-white/5 hover:text-white'}`}>한국어</button>
-                    <button onClick={() => setLanguage('en')} className={`block w-full text-left px-4 py-2 text-sm ${language === 'en' ? 'text-indigo-400 bg-white/5' : 'text-white/70 hover:bg-white/5 hover:text-white'}`}>English</button>
-                    <button onClick={() => setLanguage('ja')} className={`block w-full text-left px-4 py-2 text-sm ${language === 'ja' ? 'text-indigo-400 bg-white/5' : 'text-white/70 hover:bg-white/5 hover:text-white'}`}>日本語</button>
-                    <button onClick={() => setLanguage('vi')} className={`block w-full text-left px-4 py-2 text-sm ${language === 'vi' ? 'text-indigo-400 bg-white/5' : 'text-white/70 hover:bg-white/5 hover:text-white'}`}>Tiếng Việt</button>
-                  </div>
-                </div>
-              </div>
-
               <a href="#contact" className="px-5 py-2 bg-indigo-500 hover:bg-indigo-400 rounded-full text-white text-sm font-semibold transition-all shadow-lg shadow-indigo-500/20 whitespace-nowrap">
                 {t.nav.contact}
               </a>
+
+              <div className="relative" ref={langDropdownRef}>
+                <button 
+                  onClick={() => setIsLangOpen(!isLangOpen)}
+                  className="flex items-center gap-1.5 text-sm font-medium text-white/70 hover:text-white transition-colors px-2 py-1 cursor-pointer"
+                >
+                  <Globe size={16} />
+                  <span className="uppercase">{language}</span>
+                </button>
+                <div className={`absolute right-0 mt-2 w-32 origin-top-right rounded-md bg-[#0F172A]/90 backdrop-blur-md shadow-lg ring-1 ring-white/10 focus:outline-none transition-all duration-200 ${isLangOpen ? 'opacity-100 visible' : 'opacity-0 invisible'}`}>
+                  <div className="py-1">
+                    <button onClick={() => { setLanguage('ko'); setIsLangOpen(false); }} className={`block w-full text-left px-4 py-2 text-sm ${language === 'ko' ? 'text-indigo-400 bg-white/5' : 'text-white/70 hover:bg-white/5 hover:text-white'}`}>한국어</button>
+                    <button onClick={() => { setLanguage('en'); setIsLangOpen(false); }} className={`block w-full text-left px-4 py-2 text-sm ${language === 'en' ? 'text-indigo-400 bg-white/5' : 'text-white/70 hover:bg-white/5 hover:text-white'}`}>English</button>
+                    <button onClick={() => { setLanguage('ja'); setIsLangOpen(false); }} className={`block w-full text-left px-4 py-2 text-sm ${language === 'ja' ? 'text-indigo-400 bg-white/5' : 'text-white/70 hover:bg-white/5 hover:text-white'}`}>日本語</button>
+                    <button onClick={() => { setLanguage('vi'); setIsLangOpen(false); }} className={`block w-full text-left px-4 py-2 text-sm ${language === 'vi' ? 'text-indigo-400 bg-white/5' : 'text-white/70 hover:bg-white/5 hover:text-white'}`}>Tiếng Việt</button>
+                  </div>
+                </div>
+              </div>
             </nav>
 
             {/* Mobile Menu Button & Lang */}
-            <div className="flex md:hidden items-center gap-3">
-               <div className="relative group/mob lang-dropdown">
-                <button className="flex items-center gap-1.5 text-sm font-medium text-white/70 hover:text-white transition-colors px-2 py-1">
+            <div className="flex md:hidden items-center gap-2">
+               <div className="relative" ref={mobLangDropdownRef}>
+                <button 
+                  onClick={() => setIsMobLangOpen(!isMobLangOpen)}
+                  className="flex items-center gap-1.5 text-sm font-medium text-white/70 hover:text-white transition-colors px-2 py-1 cursor-pointer"
+                >
                   <Globe size={20} />
                 </button>
-                <div className="absolute right-0 mt-2 w-32 origin-top-right rounded-md bg-[#0F172A] shadow-lg ring-1 ring-white/10 opacity-0 invisible group-hover/mob:opacity-100 group-hover/mob:visible transition-all duration-200 z-[60]">
+                <div className={`absolute right-0 mt-2 w-32 origin-top-right rounded-md bg-[#0F172A] shadow-lg ring-1 ring-white/10 transition-all duration-200 z-[60] ${isMobLangOpen ? 'opacity-100 visible' : 'opacity-0 invisible'}`}>
                   <div className="py-1">
-                    <button onClick={() => setLanguage('ko')} className={`block w-full text-left px-4 py-2 text-sm ${language === 'ko' ? 'text-indigo-400 bg-white/5' : 'text-white/70'}`}>한국어</button>
-                    <button onClick={() => setLanguage('en')} className={`block w-full text-left px-4 py-2 text-sm ${language === 'en' ? 'text-indigo-400 bg-white/5' : 'text-white/70'}`}>English</button>
-                    <button onClick={() => setLanguage('ja')} className={`block w-full text-left px-4 py-2 text-sm ${language === 'ja' ? 'text-indigo-400 bg-white/5' : 'text-white/70'}`}>日本語</button>
-                    <button onClick={() => setLanguage('vi')} className={`block w-full text-left px-4 py-2 text-sm ${language === 'vi' ? 'text-indigo-400 bg-white/5' : 'text-white/70'}`}>Tiếng Việt</button>
+                    <button onClick={() => { setLanguage('ko'); setIsMobLangOpen(false); }} className={`block w-full text-left px-4 py-2 text-sm ${language === 'ko' ? 'text-indigo-400 bg-white/5' : 'text-white/70'}`}>한국어</button>
+                    <button onClick={() => { setLanguage('en'); setIsMobLangOpen(false); }} className={`block w-full text-left px-4 py-2 text-sm ${language === 'en' ? 'text-indigo-400 bg-white/5' : 'text-white/70'}`}>English</button>
+                    <button onClick={() => { setLanguage('ja'); setIsMobLangOpen(false); }} className={`block w-full text-left px-4 py-2 text-sm ${language === 'ja' ? 'text-indigo-400 bg-white/5' : 'text-white/70'}`}>日本語</button>
+                    <button onClick={() => { setLanguage('vi'); setIsMobLangOpen(false); }} className={`block w-full text-left px-4 py-2 text-sm ${language === 'vi' ? 'text-indigo-400 bg-white/5' : 'text-white/70'}`}>Tiếng Việt</button>
                   </div>
                 </div>
               </div>
@@ -654,9 +495,6 @@ function Home({ language, setLanguage, t }: { language: Language; setLanguage: a
                  </h2>
                  <p className="text-white/60 text-lg">{t.projects.desc}</p>
               </div>
-              <a href="/admin" className="px-5 py-2.5 rounded-full bg-white/10 hover:bg-white/20 border border-white/10 text-white text-sm font-medium transition-colors flex items-center gap-2 w-fit">
-                <Settings size={16}/> {t.projects.btnAdmin}
-              </a>
             </motion.div>
 
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
