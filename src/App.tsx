@@ -51,7 +51,7 @@ function Logo({ size, className = "" }: { size: number, className?: string }) {
   
   return (
     <img 
-      src="/brand-logo.png?v=21"
+      src="/logo.png?v=2000"
       alt="Association Logo" 
       style={{ 
         width: size, 
