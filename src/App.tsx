@@ -51,7 +51,7 @@ function Logo({ size, className = "" }: { size: number, className?: string }) {
   
   return (
     <img 
-      src="/logo.png?v=3"
+      src="/logo.png?v=4"
       alt="Association Logo" 
       style={{ width: size, height: size, filter: 'brightness(0) invert(1)' }}
       className={`object-contain flex-shrink-0 ${className}`}
