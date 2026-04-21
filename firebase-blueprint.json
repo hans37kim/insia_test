@@ -1,0 +1,26 @@
+{
+  "entities": {
+    "Project": {
+      "title": "Project",
+      "description": "Records of completed projects and tasks managed by the association.",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string", "description": "Name of the project" },
+        "client": { "type": "string", "description": "Name of the client/funder" },
+        "year": { "type": "string", "description": "Year of the project execution" },
+        "description": { "type": "string", "description": "Detailed description of the project" },
+        "visibility": { "type": "string", "enum": ["public"] },
+        "createdAt": { "type": "timestamp" },
+        "ownerId": { "type": "string" }
+      },
+      "required": ["title", "client", "year", "description", "visibility", "createdAt", "ownerId"]
+    }
+  },
+  "firestore": {
+    "projects/{projectId}": {
+      "schema": { "$ref": "#/entities/Project" },
+      "description": "Collection storing all projects."
+    }
+  }
+}
+

@@ -1,0 +1,46 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Global helpers
+    function isSignedIn() { return request.auth != null; }
+    function isAdmin() { return isSignedIn() && request.auth.token.email == 'kyueok.kim@gmail.com' && request.auth.token.email_verified == true; }
+    function incoming() { return request.resource.data; }
+    function existing() { return resource.data; }
+    function isValidId(id) { return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$'); }
+
+    // Project validation
+    function isValidProject(data) {
+      return data.keys().hasAll(['title', 'client', 'year', 'description', 'visibility', 'createdAt', 'ownerId'])
+        && data.keys().size() == 7
+        && data.title is string && data.title.size() <= 200
+        && data.client is string && data.client.size() <= 200
+        && data.year is string && data.year.size() <= 4
+        && data.description is string && data.description.size() <= 2000
+        && data.visibility == 'public'
+        && data.ownerId == request.auth.uid
+        && data.createdAt is timestamp;
+    }
+
+    match /projects/{projectId} {
+      allow get: if isValidId(projectId) && (isAdmin() || existing().visibility == 'public');
+      allow list: if isAdmin() || resource.data.visibility == 'public';
+      
+      allow create: if isValidId(projectId) && isAdmin() 
+        && isValidProject(incoming()) 
+        && incoming().createdAt == request.time;
+        
+      allow update: if isValidId(projectId) && isAdmin() 
+        && isValidProject(incoming())
+        && incoming().createdAt == existing().createdAt
+        && incoming().ownerId == existing().ownerId;
+        
+      allow delete: if isValidId(projectId) && isAdmin();
+    }
+  }
+}
