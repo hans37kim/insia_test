@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, FormEvent } from 'react';
 import { Routes, Route, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import {
@@ -34,6 +34,30 @@ export default function App() {
     <Routes>
       <Route path="/" element={<Home language={language} setLanguage={setLanguage} t={t} />} />
     </Routes>
+  );
+}
+
+// ============== Logo Component ==============
+function Logo({ size, className = "" }: { size: number, className?: string }) {
+  const [hasError, setHasError] = useState(false);
+  
+  if (hasError) {
+    return (
+      <div style={{ width: size, height: size }} className={`rounded-lg bg-gradient-to-br from-indigo-500 to-emerald-400 flex items-center justify-center text-white flex-shrink-0 ${className}`}>
+        <Building2 size={size * 0.6} strokeWidth={2.5} />
+      </div>
+    );
+  }
+  
+  return (
+    <img 
+      src="/logo.png?v=3"
+      alt="Association Logo" 
+      style={{ width: size, height: size, filter: 'brightness(0) invert(1)' }}
+      className={`object-contain flex-shrink-0 ${className}`}
+      referrerPolicy="no-referrer"
+      onError={() => setHasError(true)}
+    />
   );
 }
 
@@ -80,7 +104,7 @@ function Home({ language, setLanguage, t }: { language: Language; setLanguage: a
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const handleContactSubmit = (e: React.FormEvent) => {
+  const handleContactSubmit = (e: FormEvent) => {
     e.preventDefault();
     setFormStatus('submitting');
     setTimeout(() => {
@@ -125,10 +149,10 @@ function Home({ language, setLanguage, t }: { language: Language; setLanguage: a
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-indigo-500 to-emerald-400 flex items-center justify-center text-white">
-                <Building2 size={24} strokeWidth={2.5} />
-              </div>
-              <span className="text-xl font-bold tracking-tight uppercase text-white hidden sm:inline-block">
+              <Logo size={40} />
+              <span className={`font-bold tracking-tight uppercase text-white hidden sm:inline-block ${
+                (language === 'en' || language === 'vi') ? 'text-sm lg:text-base' : 'text-lg lg:text-xl'
+              }`}>
                 {t.footer.title}
               </span>
             </div>
@@ -255,7 +279,11 @@ function Home({ language, setLanguage, t }: { language: Language; setLanguage: a
                 animate="visible"
                 variants={fadeIn}
                 transition={{ delay: 0.1 }}
-                className="text-4xl sm:text-5xl md:text-7xl font-extrabold tracking-tight leading-[1.1] mb-8"
+                className={`font-extrabold tracking-tight leading-[1.1] mb-8 ${
+                  (language === 'en' || language === 'vi') 
+                  ? 'text-3xl sm:text-4xl md:text-6xl' 
+                  : 'text-4xl sm:text-5xl md:text-7xl'
+                }`}
               >
                 {t.hero.title1} <br />
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-emerald-400">{t.hero.title2}</span>
@@ -645,10 +673,10 @@ function Home({ language, setLanguage, t }: { language: Language; setLanguage: a
           <div className="grid md:grid-cols-2 gap-12 lg:gap-24 mb-12">
             <div>
               <div className="flex items-center gap-2 mb-6">
-                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-emerald-400 flex items-center justify-center text-white">
-                  <Building2 size={18} strokeWidth={2.5} />
-                </div>
-                <span className="text-lg font-bold text-white tracking-tight">
+                <Logo size={32} />
+                <span className={`font-bold text-white tracking-tight ${
+                  (language === 'en' || language === 'vi') ? 'text-sm' : 'text-base lg:text-lg'
+                }`}>
                   {t.footer.title}
                 </span>
               </div>
