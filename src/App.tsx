@@ -51,12 +51,20 @@ function Logo({ size, className = "" }: { size: number, className?: string }) {
   
   return (
     <img 
-      src="/logo.png?v=5"
+      src="/brand-logo.png?v=21"
       alt="Association Logo" 
-      style={{ width: size, height: size, filter: 'brightness(0) invert(1)' }}
+      style={{ 
+        width: size, 
+        height: size, 
+        filter: 'brightness(0) invert(1)',
+        display: 'block'
+      }}
       className={`object-contain flex-shrink-0 ${className}`}
       referrerPolicy="no-referrer"
-      onError={() => setHasError(true)}
+      onError={() => {
+        console.error("Logo failed to load");
+        setHasError(true);
+      }}
     />
   );
 }
